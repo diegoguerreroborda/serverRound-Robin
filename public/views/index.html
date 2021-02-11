@@ -3,9 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    
     <title>Inicio</title>
 </head>
 <body>
     <h1>Hola mundo</h1>
+    <div id="app">
+        {{ message }}
+      </div>
+    <div id="app-2">
+        <span v-bind:title="message">
+          Hover your mouse over me for a few seconds
+          to see my dynamically bound title!
+        </span>
+      </div>
+    <input id="input_message" v-model="message" placeholder="Ruta">
+    <button type="button" id="sendD" onclick="sendD()">
+        Boton Enviar
+    </button>
+    <button type="button" id="btnGet" onclick="loadDoc()">
+        Boton Get
+    </button>
+      
+      <script src="controller.js"></script>
 </body>
 </html>

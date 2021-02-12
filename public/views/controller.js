@@ -12,33 +12,30 @@ var app = new Vue({
     }
   })
 
-  const sendData = () => {
-    const urlPost = 'http://localhost:3001/send_image'
-    var httpPost = new XMLHttpRequest();
-    httpPost.onload = () =>{
-        httpPost.responseText = "Hola mundoooo"
-    } 
-    httpPost.open("POST", urlPost);
-    httpPost.setRequestHeader("Content-type", "aplication/x-www-form-urlencoded");
-    httpPost.send()
-};
+function sendData(){
+  var url = 'http://localhost:3010/send_image';
+  var data = {username: document.getElementById("input_message").value};
 
-function sendD(){
-    var xhttp = new XMLHttpRequest();
-    xhttp.open("POST", "http://localhost:3001/send_image", true);
-    xhttp.setRequestHeader("Content-type", document.getElementById("input_message").value);
-    //xhttp.set('Content-Type', 'text/plain')
-    xhttp.send(); 
-    loadDoc();
+  fetch(url, {
+    method: 'POST', // or 'PUT'
+    body: JSON.stringify(data.username), // data can be `string` or {object}!
+    headers:{
+      'Content-Type': document.getElementById("input_message").value
+    }
+  }).then(res => res.json())
+  .catch(error => console.error('Error:', error))
+  .then(response => console.log('Success:', response));
+  //loadDoc();
 }
 
+
 function loadDoc() {
-    var jhttp = new XMLHttpRequest();
-    jhttp.onreadystatechange = function() {
-      if (this.status == 200) {
-       document.getElementById("btnGet").innerHTML = this.responseText;
+  fetch('http://localhost:3010/received_image')
+  .then(response => response.text())
+  .then( 
+      data => {
+          console.log(data)
+          document.getElementById("btnGet").innerHTML = data;
       }
-    };
-    jhttp.open("GET", "http://localhost:3001/received_image", true);
-    jhttp.send();
+  );
 }

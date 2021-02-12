@@ -4,7 +4,7 @@
   "description": "",
   "main": "middleware.js",
   "scripts": {
-      "index": "nodemon index.js"
+    "dev": "nodemon middleware.js"
   },
   "repository": {
     "type": "git",
@@ -17,8 +17,10 @@
   },
   "homepage": "https://github.com/diegoguerreroborda/serverRound-Robin#readme",
   "dependencies": {
+    "axios": "^0.21.1",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "ping": "^0.4.0",
     "xmlhttprequest": "^1.8.0"
   }
 }

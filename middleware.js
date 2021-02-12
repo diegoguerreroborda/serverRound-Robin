@@ -1,47 +1,74 @@
-const express = require('express')
-var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-const cors = require('cors')
+const express = require('express');
+const axios = require('axios');
+const cors = require('cors');
+var ping = require('ping');
+const port = process.argv[2];
+
 const app = express()
 app.use(cors())
-const port = 3001
 
-var responseServer = "";
-var requestImg = "";
+let responseServer = "";
+let requestImg = "";
+let count = 0;
+let hosts = [3000, 3001, 3002];
+let portServer = 3000;
+let url = `http://localhost:${portServer}/info_client`;
 
-//POST
-const sendData = () => {
-    const urlPost = 'http://localhost:3000/data_client'
-    var httpPost = new XMLHttpRequest();
-    httpPost.open("POST", urlPost);
-    httpPost.send(requestImg)
-};
-
-//GET
-const getDataImg = () => {
-    const httpReq = new XMLHttpRequest()
-    const url = 'http://localhost:3000/info_client'
-    httpReq.open("GET", url)
-    httpReq.onreadystatechange = function(){
-        if(this.status == 200){
-            console.log("Que pasa puta")
-            console.log(this.responseText) 
-            responseServer = this.responseText
-        }
+var checkCount = (req, res, next) => {
+    console.log("entra2");
+    if(count >= hosts.length-2){
+        count++;
+    }else{
+        count = 0;
+    }
 }
-httpReq.send()
-};
 
-app.get('/received_image', (req, res) => {
-    getDataImg();
-    res.send(responseServer)
-  })
+var validateHost = function(req, res, next) {
+    //Algoritmo de round robin
+    let urlAsigned = false;
+        axios.get(`http://localhost:3000/`)
+        .then(function (response) {
+            console.log(response.data);
+        }).catch(function (error) {
+            // handle error
+            console.log("Error");
+        }).then(function () {
+            // always executed
+        });
+
+    next();
+  }
+
+app.use('/send_image', validateHost);
 
 app.post('/send_image', (req, res) => {
-    console.log("llega del cliente")
-    console.log(req.header('Content-type'))
-    requestImg = req.header('Content-type')
-    sendData();
+    console.log("llega del cliente");
+    requestImg = req.header('Content-type');
+    axios({
+        method: 'post',
+        url: 'http://localhost:3000/data_client',
+        data: {
+          img: requestImg
+        }
+      }).then(res => {
+          console.log(res.config.data);
+      }).catch(err => {
+          console.log(err);
+      });
   });
+
+app.get('/received_image', (req, res) => {
+    console.log("Llega del servidor, va hacia el cliente");
+    axios.get('http://localhost:3000/info_client')
+    .then(function (response) {
+        res.send(response.data.img);
+    }).catch(function (error) {
+        // handle error
+        console.log("Error");
+    }).then(function () {
+        // always executed
+    });
+});
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)

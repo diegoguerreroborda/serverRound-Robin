@@ -35,7 +35,7 @@ var validateHost = ((req, res, next) => {
     }).catch(function (error) {
         //Cuando está apagado entra aquí
         console.log("Error server");
-        //res.sendStatus(404);
+        //res.sendStatus(404);ddd
         validateHost();
     });
 })

@@ -13,7 +13,7 @@ var app = new Vue({
   })
 
 function sendData(){
-  var url = 'http://localhost:3010/send_image';
+  var url = 'http://localhost:3050/send_image';
   var data = {username: document.getElementById("input_message").value};
 
   fetch(url, {
@@ -30,7 +30,7 @@ function sendData(){
 
 
 function loadDoc() {
-  fetch('http://localhost:3010/received_image')
+  fetch('http://localhost:3050/received_image')
   .then(response => response.text())
   .then( 
       data => {

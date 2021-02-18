@@ -15,7 +15,6 @@ var app = new Vue({
 function sendData(){
   var url = 'http://localhost:3050/send_image';
   var data = {username: document.getElementById("input_message").value};
-
   fetch(url, {
     method: 'POST', // or 'PUT'
     body: JSON.stringify(data.username), // data can be `string` or {object}!

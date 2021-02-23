@@ -22,11 +22,10 @@ var checkCount = () => {
 app.all('/send_image', async(req, res, next) => {
     let pass = true
     while (pass) {
-        console.log('Hola?', hosts[count].path)
         urlG = hosts[count].path
+        console.log(`Probando con: ${hosts[count].path}`)
         checkCount()
         try {
-            console.log('try')
             res = await axios(urlG)
             pass = false;
         } catch(err) {
@@ -42,6 +41,7 @@ app.all('/send_image', async(req, res, next) => {
 
 app.post('/send_image', (req, res) => {
     console.log("llega del cliente, va hacia el servidor");
+    //console.log(`Host: ${hosts[count].path} encendido: ${hosts[count].alive}`)
     url = urlG + 'data_client';
     axios({
         method: 'post',
@@ -56,9 +56,9 @@ app.post('/send_image', (req, res) => {
       });
   });
 
-app.get('/received_image', (req, res) => {
+app.get('/received_image', async(req, res) => {
     console.log("Llega del servidor, va hacia el cliente");
-    axios.get(urlG + "info_client")
+    await axios.get(urlG + "info_client")
     .then(function (response) {
         res.send(response.data.img);
     }).catch(function (error) {

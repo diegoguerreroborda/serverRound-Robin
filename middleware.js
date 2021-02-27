@@ -1,14 +1,15 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
-var ping = require('ping');
-const port = process.argv[2];
+const Fs = require('fs') ;
+const Path = require('path')
+const port = 3050;
 
 const app = express()
 app.use(cors())
 
 let count = 0;
-let hosts = [{path: "http://localhost:3000/", alive: false}, {path: "http://localhost:3001/", alive: false}, {path: "http://localhost:3002/", alive: false}];
+let hosts = [{path: "http://localhost:4011/", alive: false}, {path: "http://localhost:3001/", alive: false}, {path: "http://localhost:3002/", alive: false}];
 let urlG;
 
 var checkCount = () => {
@@ -42,15 +43,17 @@ app.all('/send_image', async(req, res, next) => {
 app.post('/send_image', (req, res) => {
     console.log("llega del cliente, va hacia el servidor");
     //console.log(`Host: ${hosts[count].path} encendido: ${hosts[count].alive}`)
-    url = urlG + 'data_client';
+    url = urlG + 'data_img';
+    //console.log(req.body.image)
+    console.log(req.body)
     axios({
         method: 'post',
         url,
         data: {
-          img: req.header('Content-type')
+          img: req.body
         }
       }).then(res => {
-          console.log(res.config.data);
+          console.log("Entra?");
       }).catch(err => {
           console.log(err);
       });
@@ -58,7 +61,7 @@ app.post('/send_image', (req, res) => {
 
 app.get('/received_image', async(req, res) => {
     console.log("Llega del servidor, va hacia el cliente");
-    await axios.get(urlG + "info_client")
+    await axios.get(urlG + "info_img")
     .then(function (response) {
         res.send(response.data.img);
     }).catch(function (error) {

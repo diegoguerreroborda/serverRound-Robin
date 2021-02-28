@@ -3,6 +3,7 @@ const axios = require('axios');
 const cors = require('cors');
 const Fs = require('fs') ;
 const Path = require('path')
+const nodemailer = require('nodemailer');
 const port = 3050;
 
 const app = express()
@@ -19,6 +20,21 @@ var checkCount = () => {
         count = 0;
     }
 }
+
+var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'fuera.deo.tunja@gmail.com',
+      pass: 'lalala123..'
+    }
+  });
+
+var mailOptions = {
+    from: 'fuera.deo.tunja@gmail.com',
+    to: 'diegoguerreroborda@gmail.com',
+    subject: 'Sending Email using Node.js',
+    text: 'That was easy!'
+};
 
 app.all('/send_image', async(req, res, next) => {
     let pass = true
@@ -85,6 +101,17 @@ app.get('/info_servers', async(req,res) => {
   
   app.get('/create_server', (req, res) => {
       //Crear linea en el bash para crear una instancia de docker y agregarla a la lista
+  })
+
+  app.get('/send_email', (req, res) => {
+    transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+          console.log(error);
+        } else {
+          console.log('Email sent: ' + info.response);
+        }
+      });
+      res.sendStatus(200)
   })
 
 app.listen(port, () => {

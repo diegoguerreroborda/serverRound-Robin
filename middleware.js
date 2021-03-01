@@ -2,7 +2,9 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const Fs = require('fs') ;
-const Path = require('path')
+var path = require('path');
+var multer = require('multer');
+var upload = multer({dest: 'uploads/'});
 const nodemailer = require('nodemailer');
 const port = 3050;
 
@@ -22,7 +24,8 @@ var checkCount = () => {
 }
 
 var transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com ',
+    port: 465,
     auth: {
       user: 'fuera.deo.tunja@gmail.com',
       pass: 'lalala123..'
@@ -36,7 +39,19 @@ var mailOptions = {
     text: 'That was easy!'
 };
 
-app.all('/send_image', async(req, res, next) => {
+function base64_decode(base64str, file) {
+    var bitmap = new Buffer(base64str, 'base64');
+    Fs.writeFileSync(file, bitmap);
+    console.log('Image convertida con exito');
+}
+
+function base64_encode(file) {
+    var bitmap = Fs.readFileSync(file);
+    return new Buffer(bitmap).toString('base64');
+}
+
+app.all('/send_imagedad', async(req, res, next) => {
+    console.log("Escoge server")
     let pass = true
     while (pass) {
         urlG = hosts[count].path
@@ -55,11 +70,11 @@ app.all('/send_image', async(req, res, next) => {
     }
     next();
 })
-
+/*
 app.post('/send_image', (req, res) => {
     console.log("llega del cliente, va hacia el servidor");
     //console.log(`Host: ${hosts[count].path} encendido: ${hosts[count].alive}`)
-    url = urlG + 'data_img';
+    url = "http://localhost:3001/" + 'data_img';
     //console.log(req.body.image)
     console.log(req.body)
     axios({
@@ -74,14 +89,49 @@ app.post('/send_image', (req, res) => {
           console.log(err);
       });
   });
+*/
+  app.post('/send_imagedad', upload.single('myImage'), (req, res) => {
+    var x = base64_encode(req.file.path)
+    //console.log(x)
+    //var nameFile = req.file.filename
+    //base64_decode(x, `${nameFile}.png`)
+    console.log("llega del cliente, va hacia el servidor");
+    url = urlG + 'data_img';
+    axios({
+        method: 'post',
+        url,
+        data: {
+          img: x
+        }
+      }).then(res => {
+          console.log("Entra?");
+      }).catch(err => {
+          res.sendStatus(404)
+          console.log(err);
+      }); 
+      res.sendStatus(200);
+      console.log("enviado al servidor")
+})
 
 app.get('/received_image', async(req, res) => {
     console.log("Llega del servidor, va hacia el cliente");
     await axios.get(urlG + "info_img")
     .then(function (response) {
-        res.send(response.data.img);
+        //base64_decode(response.data.img, 'ho.png')
+        //res.send(response.data.img);
+
+        console.log(response.data.img)
+        var image = base64_decode(response.data.img, '1.png')
+        //res.sendFile("./1.png")
+        //res.sendFile(path.join(__dirname, '../public', '1.png'));
+        //res.sendFile('../public/1.png', {root: __dirname});
+        //res.sendFile(path.resolve('public/1.png'));
+        console.log("Se va a enviar")
+        res.send(response.data.img)
+        console.log("ya se envío")
     }).catch(function (error) {
-        console.log("Error al recibir imagen");
+        res.sendStatus(404);
+        console.log("Error al enviar imagen");
     });
 });
 

@@ -7,6 +7,7 @@ var multer = require('multer');
 var upload = multer({dest: 'uploads/'});
 const nodemailer = require('nodemailer');
 const shell = require('shelljs');
+const { text } = require('express');
 const port = 3050;
 
 const app = express()
@@ -73,27 +74,8 @@ app.all('/send_imagedad', async(req, res, next) => {
     }
     next();
 })
-/*
-app.post('/send_image', (req, res) => {
-    console.log("llega del cliente, va hacia el servidor");
-    //console.log(`Host: ${hosts[count].path} encendido: ${hosts[count].alive}`)
-    url = "http://localhost:3001/" + 'data_img';
-    //console.log(req.body.image)
-    console.log(req.body)
-    axios({
-        method: 'post',
-        url,
-        data: {
-          img: req.body
-        }
-      }).then(res => {
-          console.log("Entra?");
-      }).catch(err => {
-          console.log(err);
-      });
-  });
-*/
-  app.post('/send_imagedad', upload.single('myImage'), (req, res) => {
+
+app.post('/send_imagedad', upload.single('myImage'), (req, res) => {
     var x = base64_encode(req.file.path)
     console.log("llega del cliente, va hacia el servidor");
     url = urlG + 'data_img';
@@ -137,15 +119,15 @@ app.get('/received_image', async(req, res) => {
 
 app.get('/info_servers', async(req,res) => {
     //Envía json al cliente del estado de los servers
+    textServers = 'Servidores... \n';
+    console.log("entra?")
     for (const host in hosts) {
         try {
             response = await axios(hosts[host].path)
             textServers += `Path: ${hosts[host].path}--- sirve \n`
-            console.log(textServers)
             hosts[host].alive = true;
         } catch(err) {
             hosts[host].alive = false;
-            console.log(textServers)
             textServers +=`Path: ${hosts[host].path}--- no sirve \n`
             console.log(err.toString())
         }

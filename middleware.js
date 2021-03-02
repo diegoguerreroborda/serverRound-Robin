@@ -6,14 +6,17 @@ var path = require('path');
 var multer = require('multer');
 var upload = multer({dest: 'uploads/'});
 const nodemailer = require('nodemailer');
+const shell = require('shelljs');
 const port = 3050;
 
 const app = express()
 app.use(cors())
 
 let count = 0;
-let hosts = [{path: "http://localhost:4011/", alive: false}, {path: "http://localhost:3001/", alive: false}, {path: "http://localhost:3002/", alive: false}];
+let portContent = 4000;
+let hosts = [{path: "http://localhost:3098/", alive: false}, {path: "http://localhost:3099/", alive: false}];
 let urlG;
+let textServers = 'Servidores... \n';
 
 var checkCount = () => {
     if(count < hosts.length-1){
@@ -24,20 +27,12 @@ var checkCount = () => {
 }
 
 var transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com ',
-    port: 465,
+    service: "Gmail",
     auth: {
       user: 'fuera.deo.tunja@gmail.com',
       pass: 'lalala123..'
     }
   });
-
-var mailOptions = {
-    from: 'fuera.deo.tunja@gmail.com',
-    to: 'diegoguerreroborda@gmail.com',
-    subject: 'Sending Email using Node.js',
-    text: 'That was easy!'
-};
 
 function base64_decode(base64str, file) {
     var bitmap = new Buffer(base64str, 'base64');
@@ -49,6 +44,14 @@ function base64_encode(file) {
     var bitmap = Fs.readFileSync(file);
     return new Buffer(bitmap).toString('base64');
 }
+
+function fillTextServers(){
+    textServers = '';
+    for(const host in hosts){
+        console.log("forrr");
+        textServers = textServers + `Path: ${hosts[host].path}--- sirve: ${hosts[host].alive} \n`
+    }
+  }
 
 app.all('/send_imagedad', async(req, res, next) => {
     console.log("Escoge server")
@@ -92,9 +95,6 @@ app.post('/send_image', (req, res) => {
 */
   app.post('/send_imagedad', upload.single('myImage'), (req, res) => {
     var x = base64_encode(req.file.path)
-    //console.log(x)
-    //var nameFile = req.file.filename
-    //base64_decode(x, `${nameFile}.png`)
     console.log("llega del cliente, va hacia el servidor");
     url = urlG + 'data_img';
     axios({
@@ -109,7 +109,7 @@ app.post('/send_image', (req, res) => {
           res.sendStatus(404)
           console.log(err);
       }); 
-      res.sendStatus(200);
+      //res.sendStatus(200);
       console.log("enviado al servidor")
 })
 
@@ -140,28 +140,38 @@ app.get('/info_servers', async(req,res) => {
     for (const host in hosts) {
         try {
             response = await axios(hosts[host].path)
+            textServers += `Path: ${hosts[host].path}--- sirve \n`
+            console.log(textServers)
             hosts[host].alive = true;
         } catch(err) {
             hosts[host].alive = false;
+            console.log(textServers)
+            textServers +=`Path: ${hosts[host].path}--- no sirve \n`
             console.log(err.toString())
         }
     }
+    console.log(textServers)
+    //fillTextServers();
     res.json(hosts);
   })
   
   app.get('/create_server', (req, res) => {
       //Crear linea en el bash para crear una instancia de docker y agregarla a la lista
+      portContent++;
+      shell.exec(`sh create_server.sh ${portContent}`)
+      hosts.push({path: `http://localhost:${portContent}/`, alive: true})
+      res.json(hosts);
   })
 
   app.get('/send_email', (req, res) => {
-    transporter.sendMail(mailOptions, function(error, info){
-        if (error) {
-          console.log(error);
-        } else {
-          console.log('Email sent: ' + info.response);
-        }
-      });
-      res.sendStatus(200)
+    console.log(textServers)
+    transporter.sendMail({
+        from: 'fuera.deo.tunja@gmail.com',
+        to: 'diegoguerreroborda@gmail.com',
+        subject: 'Error de servidores',
+        text: textServers
+    });
+    res.sendStatus(200)
   })
 
 app.listen(port, () => {
